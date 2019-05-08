@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "DrawDebugHelpers.h"
 #include "Components/InputComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Components/ActorComponent.h"
 #include "Grabber.generated.h"
