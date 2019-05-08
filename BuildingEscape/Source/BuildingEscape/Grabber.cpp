@@ -29,22 +29,15 @@ void UGrabber::BeginPlay()
 
 void UGrabber::FindPhysicsHandleComponent() {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle) {
-
-		UE_LOG(LogTemp, Warning, TEXT("%s is here with physics handle"), *(GetOwner()->GetName()));
-	}
-	else {
+	if (PhysicsHandle == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("%s missing physics handle controller"), *(GetOwner()->GetName()));
 	}
 }
 void UGrabber::SetupInputComponent() {
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent) {
-		UE_LOG(LogTemp, Warning, TEXT("%s is here with input controller"), *(GetOwner()->GetName()));
-
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
-
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("%s missing input controller"), *(GetOwner()->GetName()));
@@ -67,11 +60,7 @@ void UGrabber::Release() {
 	PhysicsHandle->ReleaseComponent();
 }
 
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+FVector UGrabber::GetReachLineEnd() const {
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotator;
 	//Getting the player's viewpoint
@@ -79,27 +68,29 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		OUT PlayerViewPointLocation,
 		OUT PlayerViewPointRotator
 	);
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotator.Vector()*Reach;
-
-
+	return PlayerViewPointLocation + PlayerViewPointRotator.Vector()*Reach;
+}
+FVector UGrabber::GetReachLineStart() const {
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotator;
+	//Getting the player's viewpoint
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotator
+	);
+	return PlayerViewPointLocation;
+}
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction){
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (PhysicsHandle->GrabbedComponent) {
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		PhysicsHandle->SetTargetLocation(GetReachLineEnd());
 	}
 
 }
 
-FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
-{
-
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotator;
-	//Getting the player's viewpoint
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotator
-	);
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotator.Vector()*Reach;
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 	/*
 	DrawDebugLine(
 		GetWorld(),
@@ -119,8 +110,8 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 	FHitResult LineTraceHit;
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT LineTraceHit,
-		PlayerViewPointLocation,
-		LineTraceEnd,
+		GetReachLineStart(),
+		GetReachLineEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParams
 	);
