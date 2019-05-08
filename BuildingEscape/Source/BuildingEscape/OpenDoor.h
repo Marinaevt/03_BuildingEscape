@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
@@ -36,11 +37,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate;
 	//UPROPERTY(EditAnywhere)
-	AActor* ActorOpeningDoor; //Pawn inherits from actor
-
+	float TriggerMass = 90.f;
 	UPROPERTY(EditAnywhere)
 	float DoorCloseDelay = 1.f;
 	float LastDoorOpenTime;
 
-	
+	float GetTotalMassOfActorsOnPlate();
 };

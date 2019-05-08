@@ -45,7 +45,6 @@ void UGrabber::SetupInputComponent() {
 }
 
 void UGrabber::Grab() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
 	//Try and reach any actors with physics body collision channel set
 	auto HitResult = GetFirstPhysicsBodyInReach();
 	auto ComponentToGrab = HitResult.GetComponent();
@@ -56,7 +55,6 @@ void UGrabber::Grab() {
 	}
 }
 void UGrabber::Release() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	PhysicsHandle->ReleaseComponent();
 }
 
