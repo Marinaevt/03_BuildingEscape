@@ -20,21 +20,10 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 	Owner = GetOwner();
-	LastDoorOpenTime = 0.f;
 	StartingRot = Owner->GetActorRotation();
 	if (!PressurePlate) {
 		UE_LOG(LogTemp, Error, TEXT("Pressure plate pointer in %s is null"), *GetOwner()->GetName());
 	}
-}
-
-void UOpenDoor::OpenDoor()
-{
-	//Owner->SetActorRotation(StartingRot + FRotator(0.f, fOpenAngle, 0.f));
-	OnOpenRequest.Broadcast();
-}
-void UOpenDoor::CloseDoor()
-{
-	Owner->SetActorRotation(StartingRot);
 }
 
 // Called every frame
@@ -42,11 +31,10 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (GetTotalMassOfActorsOnPlate() > TriggerMass) {
-		OpenDoor(); 
-		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+		OnOpenRequest.Broadcast();
 	}
-	if (GetWorld()->GetTimeSeconds() > LastDoorOpenTime + DoorCloseDelay) {
-		CloseDoor();
+	else {
+		OnCloseRequest.Broadcast();
 	}
 }
 
